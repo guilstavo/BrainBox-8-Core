@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Loop Switcher</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="utf-8">
+        <link rel="icon" href="data:,">
+        <style>
+            html {
+                font-family: Helvetica;
+                display: inline-block;
+                margin: 0px auto;
+                text-align: center;
+                background-color: #1f1f1f;
+            }
+            .page-container {
+                width: 80vw;
+                margin: auto;
+            }
+            h1 {
+                color: #99c3ff;
+                padding: 2vh;
+            }
+            p {
+                font-size: 1.5rem;
+                color: #dadce0;
+            }
+            .container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+            .btn {
+                margin: 10px;
+            }
+            .bank-button, .patch-button {
+                display: inline-block;
+                background-color: #e7bd3b;
+                border: none;
+                border-radius: 4px;
+                color: white;
+                padding: 16px 40px;
+                text-decoration: none;
+                font-size: 30px;
+                margin: 2px;
+                cursor: pointer;
+            }
+            .down {
+                background-color: #4286f4;
+            }
+            .loop-container {
+                margin-top: 1rem;
+            }
+            .effect-loop div {
+                background-color: #3c4043;
+                border: 1px solid #fff;
+                border-radius: 10px;
+                margin: 10px;
+                cursor: pointer;
+                width: 50px;
+                height: 100px;
+                margin: 0 auto;
+            }
+            .loop-name {
+                font-size: 1rem;
+            }
+            .effect-loop .enabled,
+            .switch .enabled {
+                background-color: #34a853;
+            }
+            .effect-loop .disabled,
+            .switch .disabled {
+                background-color: #ea4335;
+            }
+            .footswitch {
+                background-color: #3c4043;
+                border: 1px solid #fff;
+                border-radius: 10px;
+                margin: 10px;
+                /* width: 600px; */
+                /* height: 100px; */
+                padding: 1rem;
+            }
+            .switch div {
+                border: 1px solid #fff;
+                border-radius: 100%;
+                margin: 0 auto;
+                width: 20px;
+                height: 20px;
+            }
+            .switch-name {
+                text-transform: capitalize;
+                font-size: 1.5rem;
+            }
+            .midi_data {
+                color: #dadce0;
+                display: block;
+                text-align: left;
+                font-size: 18px;
+            }
+        </style>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                document.querySelectorAll("form").forEach(form => {
+                    form.addEventListener("submit", async function(event) {
+                        event.preventDefault();
+
+                        // Get the hidden input value and name
+                        const input = form.querySelector('input[type="hidden"]');
+                        const body = `${input.name}=${input.value}`;
+                        
+                        console.log("Sending POST:", body);
+                        
+                        try {
+                            await fetch(form.action, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                                body: body,
+                            });
+                        } catch (err) {
+                            console.error("Error submitting form:", err);
+                        }
+                    });
+                });
+            });
+
+            function initEventSource() {
+                const evtSource = new EventSource("/events");
+
+                const elements = {
+                    bank: document.getElementById("bank"),
+                    patch: document.getElementById("patch"),
+                    midi_data: document.getElementById("midi_data")
+                };
+
+                var currentData = ""
+
+                evtSource.onmessage = event => {
+                    const data = JSON.parse(event.data);
+                    
+                    if (event.data != currentData) {
+                        console.log('data: ', data); 
+                        currentData = event.data;
+
+                        for (const key in data.classes) {
+                            const el = document.getElementById(key);
+                            if (el) el.className = data.classes[key];
+                        }
+
+                        elements.bank.innerText = data.bank;
+                        elements.patch.innerText = data.patch;
+                        // midi_data contains HTML markup (formatted server-side)
+                        // use innerHTML so the browser renders the markup instead of showing it as text
+                        elements.midi_data.innerHTML = data.midi_data;
+                    }
+                };
+
+                evtSource.onerror = () => {
+                    console.warn("SSE connection lost, reconnecting...");
+                    evtSource.close();
+                    setTimeout(initEventSource, 2000);
+                };
+            }
+
+            document.addEventListener("DOMContentLoaded", initEventSource);
+        </script>
+    </head>
+    <body>
+        <div class="page-container">
+            <h1>Loop Switcher</h1>
+            <p>Bank: <span id="bank">{{ bank }}</span></p>
+            <p>Patch: <span id="patch">{{ patch }}</span></p>
+            <div class="container">
+                <div>
+                    <form action="/" method="post" class="btn">
+                        <input type="hidden" name="bank" value="up" />
+                        <input type="submit" class="bank-button up submit" value="Bank Up" />
+                    </form>
+                    <form action="/" method="post" class="btn">
+                        <input type="hidden" name="bank" value="down" />
+                        <input type="submit" class="bank-button down submit" value="Bank down" />
+                    </form>
+                </div>
+                <div class="container">
+                    <form action="/" method="post" class="btn">
+                        <input type="hidden" name="patch" value="1" />
+                        <input type="submit" class="patch-button submit" value="1" />
+                    </form>
+                    <form action="/" method="post" class="btn">
+                        <input type="hidden" name="patch" value="2" />
+                        <input type="submit" class="patch-button submit" value="2" />
+                    </form>
+                    <form action="/" method="post" class="btn">
+                        <input type="hidden" name="patch" value="3" />
+                        <input type="submit" class="patch-button submit" value="3" />
+                    </form>
+                    <form action="/" method="post" class="btn">
+                        <input type="hidden" name="patch" value="4" />
+                        <input type="submit" class="patch-button submit" value="4" />
+                    </form>
+                </div>
+            </div>
+            <div class="container loop-container">
+                <div class="effect-loop">
+                    <div id="loop1_status" class="{{ loop1_status }}"></div> 
+                    <p class="loop-name">{{ loop1_name }}</p>
+                </div>
+                <div class="effect-loop">
+                    <div id="loop2_status" class="{{ loop2_status }}"></div> 
+                    <p class="loop-name">{{ loop2_name }}</p>
+                </div>
+                <div class="effect-loop">
+                    <div id="loop3_status" class="{{ loop3_status }}"></div> 
+                    <p class="loop-name">{{ loop3_name }}</p>
+                </div>
+                <div class="effect-loop">
+                    <div id="loop4_status" class="{{ loop4_status }}"></div> 
+                    <p class="loop-name">{{ loop4_name }}</p>
+                </div>
+                <div class="effect-loop">
+                    <div id="loop5_status" class="{{ loop5_status }}"></div> 
+                    <p class="loop-name">{{ loop5_name }}</p>
+                </div>
+                <div class="effect-loop">
+                    <div  id="loop6_status"class="{{ loop6_status }}"></div> 
+                    <p class="loop-name">{{ loop6_name }}</p>
+                </div>
+                <div class="effect-loop">
+                    <div  id="loop7_status"class="{{ loop7_status }}"></div> 
+                    <p class="loop-name">{{ loop7_name }}</p>
+                </div>
+                <div class="effect-loop">
+                    <div id="loop8_status" class="{{ loop8_status }}"></div> 
+                    <p class="loop-name">{{ loop8_name }}</p>
+                </div>
+            </div>
+            <div class="container footswitch">
+                <div class="switch">
+                    <div id="switch1_status" class="{{ switch1_status }}"></div>
+                    <p class="switch-name">{{ switch1_name }}</p>
+                </div>
+                <div class="switch">
+                    <div id="switch2_status" class="{{ switch2_status }}"></div>
+                    <p class="switch-name">{{ switch2_name }}</p>
+                </div>
+                <div class="switch">
+                    <div id="switch3_status" class="{{ switch3_status }}"></div>
+                    <p class="switch-name">{{ switch3_name }}</p>
+                </div>
+                <div class="switch">
+                    <div id="switch4_status" class="{{ switch4_status }}"></div>
+                    <p class="switch-name">{{ switch4_name }}</p>
+                </div>
+            </div>
+            <div class="container midi_data">
+                <p>Midi:</p>
+                <div id="midi_data">{{ midi_data }}</div>
+            </div>
+        </div>
+    </body>
+</html>

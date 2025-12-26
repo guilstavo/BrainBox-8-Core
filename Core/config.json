@@ -1,0 +1,289 @@
+{
+    "version": "1.0",
+    "pedalList": [
+        {"id": 1, "name": "NS-2"},
+        {"id": 2, "name": "Big Muff"},
+        {"id": 3, "name": "Blues Driver"},
+        {"id": 4, "name": "StreelPark"},
+        {"id": 5, "name": "Dyna Comp"},
+        {"id": 6, "name": "Phase 90"},
+        {"id": 7, "name": "Chorus"},
+        {"id": 8, "name": "Empty"}
+    ],
+    "footswitch": {
+        "lead": 2,
+        "clean": 3,
+        "reverb": 6,
+        "boost": 7
+    },
+    "midiPin": 4,
+	"banks": [
+        {
+            "name": "Opeth - Deliverance",
+            "patches": [ 
+                {
+                    "name": "Rhythm Distortion",
+                    "loops":[1,4],
+                    "footswitch": [1,0,0,1],
+                    "midi": [
+                        {"channel": 1, "program": 8},
+                        {"channel": 2, "program": 1}
+                    ]
+				},
+                {
+                    "name": "Clean",
+                    "loops":[5],
+                    "footswitch": [0,1,1,0],
+                    "midi": [
+                        {"channel": 1, "program": 9},
+                        {"channel": 2, "program": 1}
+                    ]
+				},
+                {
+                    "name": "Solo",
+                    "loops":[1,4],
+                    "footswitch": [1,0,1,1],
+                    "midi": [
+                        {"channel": 1, "program": 10},
+                        {"channel": 2, "program": 7}
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Pink Floyd - Echoes",
+            "patches": [ 
+                {
+                    "name": "Intro",
+                    "loops":[5],
+                    "footswitch": [0,1,1,0],
+                    "midi": [
+                        {"channel": 1, "program": 16},
+                        {"channel": 2, "program": 7}
+                    ]
+				},
+                {
+                    "name": "Rhythm",
+                    "loops":[4,5],
+                    "footswitch": [0,1,0,0],
+                    "midi": [
+                        {"channel": 1, "program": 17},
+                        {"channel": 2, "program": 1}
+                    ]
+				},
+                {
+                    "name": "Solo",
+                    "loops":[1,2,3,6],
+                    "footswitch": [0,1,1,0],
+                    "midi": [
+                        {"channel": 1, "program": 10},
+                        {"channel": 2, "program": 7}
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Pink Floyd - Breathe",
+            "patches": [ 
+                {
+                    "name": "Rhythm",
+                    "loops":[5,6],
+                    "footswitch": [0,1,0,0],
+                    "midi": [
+                        {"channel": 1, "program": 24},
+                        {"channel": 2, "program": 1}
+                    ]
+				}
+            ]
+        },
+        {
+            "name": "Pink Floyd - Time",
+            "patches": [ 
+                {
+                    "name": "Intro",
+                    "loops":[5],
+                    "footswitch": [0,1,1,0],
+                    "midi": [
+                        {"channel": 1, "program": 32},
+                        {"channel": 2, "program": 7}
+                    ]
+				},
+                {
+                    "name": "Rhythm",
+                    "loops":[4,5],
+                    "footswitch": [0,1,0,0],
+                    "midi": [
+                        {"channel": 1, "program": 33},
+                        {"channel": 2, "program": 1}
+                    ]
+				},
+                {
+                    "name": "Solo",
+                    "loops":[1,2,3,6],
+                    "footswitch": [0,1,1,0],
+                    "midi": [
+                        {"channel": 1, "program": 34},
+                        {"channel": 2, "program": 7}
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Pink Floyd - Money",
+            "patches": [
+                {
+                    "name": "Rhythm",
+                    "loops":[3,5],
+                    "footswitch": [0,1,0,0],
+                    "midi": [
+                        {"channel": 1, "program": 40},
+                        {"channel": 2, "program": 1}
+                    ]
+				},
+                {
+                    "name": "Solo",
+                    "loops":[1,2,3],
+                    "footswitch": [0,1,1,0],
+                    "midi": [
+                        {"channel": 1, "program": 41},
+                        {"channel": 2, "program": 8}
+                    ]
+                },
+                {
+                    "name": "Solo Dry",
+                    "loops":[1,2,3],
+                    "footswitch": [0,1,0,0],
+                    "midi": [
+                        {"channel": 1, "program": 41},
+                        {"channel": 2, "program": 8}
+                    ]
+                }
+            ]
+        },
+		{
+			"name": "Pink Floyd - Shine On You Crazy Diamond",
+			"patches": [ 
+				{
+					"name": "Solo 1",
+					"loops":[5,6],
+                    "footswitch": [0,1,1,0],
+                    "midi": [
+                        {"channel": 1, "program": 48},
+                        {"channel": 2, "program": 3}
+                    ]
+                },
+                {
+                    "name": "Long Delay",
+                    "loops":[5,6],
+                    "footswitch": [0,1,1,0],
+                    "midi": [
+                        {"channel": 1, "program": 49},
+                        {"channel": 2, "program": 2}
+                    ]
+                },
+                {
+                    "name": "Solo 2",
+                    "loops":[3,5,6],
+                    "footswitch": [0,1,1,0],
+                    "midi": [
+                        {"channel": 1, "program": 50},
+                        {"channel": 2, "program": 3}
+                    ]
+                }
+			]
+		},
+        {
+            "name": "Pink Floyd - Have a Cigar",
+            "patches": [
+                {
+                    "name": "Rhythm",
+                    "loops":[3,5],
+                    "footswitch": [0,1,0,0],
+                    "midi": [
+                        {"channel": 1, "program": 40},
+                        {"channel": 2, "program": 1}
+                    ]
+				},
+                {
+                    "name": "Solo",
+                    "loops":[1,2,3,6],
+                    "footswitch": [0,1,1,0],
+                    "midi": [
+                        {"channel": 1, "program": 41},
+                        {"channel": 2, "program": 7}
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Pink Floyd - Another Brick in the Wall Part 2",
+            "patches": [
+                {
+                    "name": "Rhythm",
+                    "loops":[5],
+                    "footswitch": [0,1,0,0],
+                    "midi": [
+                        {"channel": 1, "program": 72},
+                        {"channel": 2, "program": 1}
+                    ]
+				},
+                {
+                    "name": "Solo",
+                    "loops":[1,2,3],
+                    "footswitch": [0,1,1,0],
+                    "midi": [
+                        {"channel": 1, "program": 73},
+                        {"channel": 2, "program": 6}
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Pink Floyd - Mother",
+            "patches": [
+                {
+                    "name": "Solo",
+                    "loops":[1,2,3],
+                    "footswitch": [0,1,1,0],
+                    "midi": [
+                        {"channel": 1, "program": 80},
+                        {"channel": 2, "program": 10}
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Pink Floyd - Comfortably Numb",
+            "patches": [
+                {
+                    "name": "Rhythm",
+                    "loops":[5],
+                    "footswitch": [0,1,1,0],
+                    "midi": [
+                        {"channel": 1, "program": 88},
+                        {"channel": 2, "program": 1}
+                    ]
+				},
+                {
+                    "name": "Solo 1",
+                    "loops":[1,2,3,6],
+                    "footswitch": [0,1,1,0],
+                    "midi": [
+                        {"channel": 1, "program": 89},
+                        {"channel": 2, "program": 11}
+                    ]
+                },
+                {
+                    "name": "Solo 2",
+                    "loops":[1,2,3,6],
+                    "footswitch": [0,1,0,0],
+                    "midi": [
+                        {"channel": 1, "program": 90},
+                        {"channel": 2, "program": 11}
+                    ]
+                }
+            ]
+        }
+	]
+}
+
