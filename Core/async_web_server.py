@@ -86,27 +86,15 @@ class AsyncWebServer:
         # supported keys or set keys individually and ignore unsupported ones.
         try:
             ap.config(**params)
+            print("AP config applied:", params)
         except ValueError as e:
-            print("ap.config rejected some params, retrying with supported keys:", e)
-            try:
-                supported = ap.config()
-                if isinstance(supported, dict):
-                    allowed = {k: v for k, v in params.items() if k in supported}
-                    ap.config(**allowed)
-                else:
-                    # Some ports return non-dict or don't support ap.config() without args;
-                    # fall back to setting keys individually and ignore failures.
-                    for k, v in params.items():
-                        try:
-                            ap.config(**{k: v})
-                        except Exception:
-                            pass
-            except Exception:
-                for k, v in params.items():
-                    try:
-                        ap.config(**{k: v})
-                    except Exception:
-                        pass
+            print("ap.config rejected some params, retrying individually:", e)
+            for k, v in params.items():
+                try:
+                    ap.config(**{k: v})
+                    print(f"  ✓ {k}={v}")
+                except Exception as ex:
+                    print(f"  ✗ {k}={v} (not supported: {ex})")
 
         # Wait until AP is fully active
         timeout = 10
