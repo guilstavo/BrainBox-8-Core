@@ -1,1 +1,3 @@
-# BrainBox-8
+# BrainBox8 Core
+
+Controller with a minion
