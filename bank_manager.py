@@ -1,4 +1,3 @@
-from display import Display
 from typing import List, Optional
 from file import Json
 from footswitch import FootSwitch, EffectSwitch
@@ -8,7 +7,6 @@ from patch import Bank, Patch
 
 class BankManager:
     banks: List[Bank] = []
-    display = Display()
     statusFile: Json
     pedalList: List[Pedal] = []
 
@@ -113,7 +111,6 @@ class BankManager:
 
     def set_active_bank_name(self, active_bank_name):
         self.active_bank_name = active_bank_name
-        self.display.print(active_bank_name)
 
     def get_active_bank_name(self) -> str:
         return self.active_bank_name or ""
@@ -124,7 +121,6 @@ class BankManager:
     
     def set_active_patch_name(self, active_patch: Patch):
         self.active_patch_name = active_patch.name
-        self.display.print(self.get_active_bank_name(), active_patch.name, self.display_loops(active_patch.switchStatusList), self.display_switches(active_patch.switchStatusList), active_patch.midiPresets[0].program, switch_letters=self.display_switch_letters(active_patch.footSwitch.get_footswitch()))
     
     def get_active_patch_name(self) -> str:
         return self.active_patch_name or ""
@@ -142,29 +138,6 @@ class BankManager:
             return [patch.name for patch in current_bank.patches]
         return []
     
-    def display_loops(self, loopStatus) -> str:
-        line = ""
-        for loop in loopStatus:
-            print('loop', loop)
-            line += self.display.on_loop if loop is True else self.display.off_loop
-
-        print('display_loops', line)
-        return line
-    
-    def display_switch_letters(self, loops: List[EffectSwitch]):
-        line = ""
-        for loop in loops:
-            line += loop.name[0].upper()
-
-        return line
-    
-    def display_switches(self, switchStatus) -> str:
-        line = ""
-        for switch in switchStatus:
-            line += self.display.on_switch if switch is True else self.display.off_switch
-
-        print('display_switches', line)
-        return line
     
     def get_html_context(self, active_patch: Patch | None):
 
