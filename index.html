@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Loop Switcher</title>
+        <title>BrainBox-8</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta charset="utf-8">
         <link rel="icon" href="data:,">
@@ -102,28 +102,59 @@
         </style>
         <script>
             document.addEventListener("DOMContentLoaded", () => {
-                document.querySelectorAll("form").forEach(form => {
-                    form.addEventListener("submit", async function(event) {
-                        event.preventDefault();
+                // Attach form submit handlers (will also apply to dynamically created forms)
+                document.addEventListener("submit", async function(event) {
+                    const form = event.target;
+                    if (!form.matches("form")) return;
+                    
+                    event.preventDefault();
 
-                        // Get the hidden input value and name
-                        const input = form.querySelector('input[type="hidden"]');
-                        const body = `${input.name}=${input.value}`;
-                        
-                        console.log("Sending POST:", body);
-                        
-                        try {
-                            await fetch(form.action, {
-                                method: "POST",
-                                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                                body: body,
-                            });
-                        } catch (err) {
-                            console.error("Error submitting form:", err);
-                        }
-                    });
+                    // Get the hidden input value and name
+                    const input = form.querySelector('input[type="hidden"]');
+                    if (!input) return;
+                    
+                    const body = `${input.name}=${input.value}`;
+                    
+                    console.log("Sending POST:", body);
+                    
+                    try {
+                        await fetch(form.action, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                            body: body,
+                        });
+                    } catch (err) {
+                        console.error("Error submitting form:", err);
+                    }
                 });
             });
+
+            function createPatchButtons(patchNames) {
+                const container = document.getElementById("patch-buttons-container");
+                container.innerHTML = ""; // Clear existing buttons
+                
+                patchNames.forEach((name, index) => {
+                    const form = document.createElement("form");
+                    form.action = "/";
+                    form.method = "post";
+                    form.className = "btn";
+                    
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = "patch";
+                    input.value = String(index + 1);
+                    
+                    const button = document.createElement("input");
+                    button.type = "submit";
+                    button.id = `patch-btn-${index + 1}`;
+                    button.className = "patch-button submit";
+                    button.value = name;
+                    
+                    form.appendChild(input);
+                    form.appendChild(button);
+                    container.appendChild(form);
+                });
+            }
 
             function initEventSource() {
                 const evtSource = new EventSource("/events");
@@ -135,6 +166,7 @@
                 };
 
                 var currentData = ""
+                var previousBank = ""
 
                 evtSource.onmessage = event => {
                     const data = JSON.parse(event.data);
@@ -143,16 +175,42 @@
                         console.log('data: ', data); 
                         currentData = event.data;
 
-                        for (const key in data.classes) {
-                            const el = document.getElementById(key);
-                            if (el) el.className = data.classes[key];
+                        // Update patch button names only when bank changes
+                        if (data.bank !== previousBank) {
+                            previousBank = data.bank;
+                            createPatchButtons(data.patch_names);
+                        }
+
+                        // Update loop statuses
+                        for (let i = 1; i <= 8; i++) {
+                            const el = document.getElementById(`loop${i}_status`);
+                            if (el) {
+                                el.className = data.active_loops.includes(i) ? "enabled" : "disabled";
+                            }
+                        }
+
+                        // Update switch statuses
+                        for (let i = 1; i <= 4; i++) {
+                            const el = document.getElementById(`switch${i}_status`);
+                            if (el) {
+                                el.className = data.active_switches.includes(i) ? "enabled" : "disabled";
+                            }
                         }
 
                         elements.bank.innerText = data.bank;
-                        elements.patch.innerText = data.patch;
-                        // midi_data contains HTML markup (formatted server-side)
-                        // use innerHTML so the browser renders the markup instead of showing it as text
-                        elements.midi_data.innerHTML = data.midi_data;
+                        elements.patch.innerText = data.patch_names[data.patch_index] || "";
+                        
+                        // Format MIDI data as HTML
+                        if (data.midi_presets && data.midi_presets.length > 0) {
+                            let midiHtml = "<ul>";
+                            data.midi_presets.forEach(preset => {
+                                midiHtml += `<li>Channel: ${preset.channel}, Program: ${preset.program}</li>`;
+                            });
+                            midiHtml += "</ul>";
+                            elements.midi_data.innerHTML = midiHtml;
+                        } else {
+                            elements.midi_data.innerHTML = "";
+                        }
                     }
                 };
 
@@ -168,7 +226,7 @@
     </head>
     <body>
         <div class="page-container">
-            <h1>Loop Switcher</h1>
+            <h1>BrainBox-8</h1>
             <p>Bank: <span id="bank">{{ bank }}</span></p>
             <p>Patch: <span id="patch">{{ patch }}</span></p>
             <div class="container">
@@ -182,23 +240,8 @@
                         <input type="submit" class="bank-button down submit" value="Bank down" />
                     </form>
                 </div>
-                <div class="container">
-                    <form action="/" method="post" class="btn">
-                        <input type="hidden" name="patch" value="1" />
-                        <input type="submit" class="patch-button submit" value="1" />
-                    </form>
-                    <form action="/" method="post" class="btn">
-                        <input type="hidden" name="patch" value="2" />
-                        <input type="submit" class="patch-button submit" value="2" />
-                    </form>
-                    <form action="/" method="post" class="btn">
-                        <input type="hidden" name="patch" value="3" />
-                        <input type="submit" class="patch-button submit" value="3" />
-                    </form>
-                    <form action="/" method="post" class="btn">
-                        <input type="hidden" name="patch" value="4" />
-                        <input type="submit" class="patch-button submit" value="4" />
-                    </form>
+                <div id="patch-buttons-container" class="container">
+                    <!-- Patch buttons will be generated dynamically -->
                 </div>
             </div>
             <div class="container loop-container">

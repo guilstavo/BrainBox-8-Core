@@ -81,6 +81,9 @@ class Patch:
     def get_loops(self) -> List[Loop]:
         return self.loops
 
+    def get_midi_list(self) -> List[dict]:
+        return [{"channel": preset.channel, "program": preset.program} for preset in self.midiPresets]
+
     def get_midi_list_html(self) -> str:
         html = "<ul>"
         for midiPreset in self.midiPresets:

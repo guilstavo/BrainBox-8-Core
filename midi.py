@@ -5,7 +5,6 @@ class Midi:
     
     uart: UART
 
-
     def __init__(self, fileName: str = "config.json"):
 
         file = Json(fileName)

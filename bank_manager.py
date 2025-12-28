@@ -135,6 +135,13 @@ class BankManager:
             return current_bank.get_active_patch()
         return None
     
+    def get_patch_names(self) -> List[str]:
+        """Get all patch names from the active bank."""
+        current_bank = self.get_active_bank()
+        if current_bank:
+            return [patch.name for patch in current_bank.patches]
+        return []
+    
     def display_loops(self, loopStatus) -> str:
         line = ""
         for loop in loopStatus:
@@ -164,8 +171,6 @@ class BankManager:
         if active_patch is None:
             return {}
         
-        print('Getting HTML context for patch:', active_patch.get_midi_list_html())
-        
         context = {
             "bank": self.get_active_bank_name(),
             "patch": self.get_active_patch_name(),
@@ -180,6 +185,8 @@ class BankManager:
             context[f"switch{i}_name"] = sw.name
             context[f"switch{i}_status"] = sw.get_css_class()
         
+
+        print('Getting HTML context for patch:', context)
         return context
     
     

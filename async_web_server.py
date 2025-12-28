@@ -60,14 +60,6 @@ class AsyncWebServer:
         print("Connected:", wlan.ifconfig())
         return wlan
 
-    # def access_point_setup(self, cfg):
-    #     ap = network.WLAN(network.AP_IF)
-    #     ap.active(True)
-    #     ap.config(
-    #         essid=cfg.get("ap_ssid", "PicoServer"),
-    #         password=cfg.get("ap_password", "12345678")
-    #     )
-    #     return ap
     def access_point_setup(self, cfg):
 
         network.country("GB")  # VERY IMPORTANT (use your country)
@@ -153,21 +145,29 @@ class AsyncWebServer:
 
             patch = self.current_patch
 
+            # Build lists of active indices instead of CSS classes
+            active_loops = []
+            active_switches = []
+
+            if patch:
+                loops = patch.get_loops()
+                for i, loop in enumerate(loops, 1):
+                    if loop.get_css_class() == "enabled":
+                        active_loops.append(i)
+
+                switches = patch.footSwitch.get_footswitch()
+                for i, sw in enumerate(switches, 1):
+                    if sw.get_css_class() == "enabled":
+                        active_switches.append(i)
+
             payload = {
                 "bank": self.bankManager.get_active_bank_name(),
-                "patch": self.bankManager.get_active_patch_name(),
-                "midi_data": patch.get_midi_list_html() if patch else "",
-                "classes": {}
+                "patch_index": self.bankManager.get_active_patch_index(),
+                "midi_presets": patch.get_midi_list() if patch else [],
+                "active_loops": active_loops,
+                "active_switches": active_switches,
+                "patch_names": self.bankManager.get_patch_names()
             }
-
-            loops = patch.get_loops() if patch else []
-            switches = patch.footSwitch.get_footswitch() if patch else []
-
-            for i, loop in enumerate(loops, 1):
-                payload["classes"][f"loop{i}_status"] = loop.get_css_class()
-
-            for i, sw in enumerate(switches, 1):
-                payload["classes"][f"switch{i}_status"] = sw.get_css_class()
 
             msg = f"data: {json.dumps(payload)}\n\n"
 
