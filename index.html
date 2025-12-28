@@ -148,7 +148,7 @@
                     button.type = "submit";
                     button.id = `patch-btn-${index + 1}`;
                     button.className = "patch-button submit";
-                    button.value = name;
+                    button.value = `[${index + 1}] ${name}`;
                     
                     form.appendChild(input);
                     form.appendChild(button);
@@ -197,8 +197,8 @@
                             }
                         }
 
-                        elements.bank.innerText = data.bank;
-                        elements.patch.innerText = data.patch_names[data.patch_index] || "";
+                        elements.bank.innerText = `[${data.bank_index + 1}] ${data.bank}`;
+                        elements.patch.innerText = data.patch_names[data.patch_index] ? `[${data.patch_index + 1}] ${data.patch_names[data.patch_index]}` : "";
                         
                         // Format MIDI data as HTML
                         if (data.midi_presets && data.midi_presets.length > 0) {
@@ -233,11 +233,11 @@
                 <div>
                     <form action="/" method="post" class="btn">
                         <input type="hidden" name="bank" value="up" />
-                        <input type="submit" class="bank-button up submit" value="Bank Up" />
+                        <input type="submit" class="bank-button up submit" value="▲ Bank Up" />
                     </form>
                     <form action="/" method="post" class="btn">
                         <input type="hidden" name="bank" value="down" />
-                        <input type="submit" class="bank-button down submit" value="Bank down" />
+                        <input type="submit" class="bank-button down submit" value="▼ Bank Down" />
                     </form>
                 </div>
                 <div id="patch-buttons-container" class="container">

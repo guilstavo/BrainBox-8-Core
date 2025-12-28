@@ -121,12 +121,10 @@ class AsyncWebServer:
         if cmd == 0x01:
             print("UDP: BANK UP")
             self.bankManager.move_up_bank()
-            self.current_patch = self.bankManager.get_active_patch()
 
         elif cmd == 0x02:
             print("UDP: BANK DOWN")
             self.bankManager.move_down_bank()
-            self.current_patch = self.bankManager.get_active_patch()
 
         elif cmd == 0x03 and len(data) >= 2:
             patch_idx = data[1]
@@ -143,7 +141,9 @@ class AsyncWebServer:
                 await asyncio.sleep(0.5)
                 continue
 
-            patch = self.current_patch
+            # Always get the current active patch to stay in sync
+            patch = self.bankManager.get_active_patch()
+            self.current_patch = patch
 
             # Build lists of active indices instead of CSS classes
             active_loops = []
@@ -152,16 +152,17 @@ class AsyncWebServer:
             if patch:
                 loops = patch.get_loops()
                 for i, loop in enumerate(loops, 1):
-                    if loop.get_css_class() == "enabled":
+                    if loop.active:
                         active_loops.append(i)
 
                 switches = patch.footSwitch.get_footswitch()
                 for i, sw in enumerate(switches, 1):
-                    if sw.get_css_class() == "enabled":
+                    if sw.active:
                         active_switches.append(i)
-
+            
             payload = {
                 "bank": self.bankManager.get_active_bank_name(),
+                "bank_index": self.bankManager.get_active_bank_index(),
                 "patch_index": self.bankManager.get_active_patch_index(),
                 "midi_presets": patch.get_midi_list() if patch else [],
                 "active_loops": active_loops,
