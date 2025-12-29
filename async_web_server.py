@@ -67,6 +67,14 @@ class AsyncWebServer:
         ap = network.WLAN(network.AP_IF)
         ap.active(True)
 
+        # Set static IP configuration for access point
+        ap.ifconfig((
+            cfg.get("ap_ip", "192.168.4.1"),
+            cfg.get("ap_subnet", "255.255.255.0"),
+            cfg.get("ap_gateway", "192.168.4.1"),
+            cfg.get("ap_dns", "8.8.8.8")
+        ))
+
         params = {
             "essid": cfg.get("ap_ssid", "PicoServer"),
             "password": cfg.get("ap_password", "12345678"),
@@ -105,18 +113,27 @@ class AsyncWebServer:
     # =====================================================
 
     async def udp_listener(self):
+        print("UDP listener task started")
+        check_count = 0
         while True:
             try:
-                data, _ = self.udp_sock.recvfrom(8)
+                data, addr = self.udp_sock.recvfrom(8)
+                print(f"UDP received {len(data)} bytes from {addr}: {data.hex()}")
                 self.handle_udp_packet(data)
-            except OSError:
+            except OSError as e:
+                # No data available, continue
+                check_count += 1
+                if check_count % 1000 == 0:
+                    print(f"UDP listener alive (checked {check_count} times, no data)")
                 await asyncio.sleep_ms(5)
 
     def handle_udp_packet(self, data: bytes):
         if len(data) < 1:
+            print("UDP: Empty packet received")
             return
 
         cmd = data[0]
+        print(f"UDP: Processing command 0x{cmd:02x}")
 
         if cmd == 0x01:
             print("UDP: BANK UP")
@@ -130,6 +147,8 @@ class AsyncWebServer:
             patch_idx = data[1]
             print("UDP: PATCH", patch_idx)
             self.current_patch = self.bankManager.select_patch(patch_idx)
+        else:
+            print(f"UDP: Unknown command or insufficient data: {data.hex()}")
 
     # =====================================================
     # SSE BROADCAST (TEXT ONLY)
@@ -274,9 +293,20 @@ class AsyncWebServer:
     # =====================================================
 
     async def run(self):
+        print("Starting web server on port 80...")
         await asyncio.start_server(self.serve_client, "0.0.0.0", 80)
+        print("Web server started")
+        
+        print("Creating broadcast task...")
         asyncio.create_task(self.broadcast())
+        
+        print("Creating UDP listener task...")
         asyncio.create_task(self.udp_listener())
+        
+        print("All tasks created, waiting for them to start...")
+        await asyncio.sleep(0.1)  # Let tasks start
+        
+        print("Entering main loop")
 
         while True:
             await asyncio.sleep(3600)
