@@ -15,27 +15,59 @@ class AsyncWebServer:
     def __init__(self, config_file="network_config.json"):
         config = Json(config_file).data
         self.access_point = config.get("access_point", False)
+        
+        # Check communication mode from network config
+        # Can be "wifi", "ble", or "both"
+        self.comm_mode = config.get("communication_mode", "wifi")
+        
+        print(f"Communication mode: {self.comm_mode}")
 
         self.webPage = WebPage()
         self.bankManager = BankManager()
         self.current_patch: Optional[Patch] = self.bankManager.get_active_patch()
         self.sse_clients = set()
+        
+        self.ble_server = None
+        self.udp_sock = None
+        self.wifi_enabled = False
+        self.ble_enabled = False
 
-        # ---------- Network ----------
-        if self.access_point:
-            self.ap = self.access_point_setup(config)
-            self.ip = self.ap.ifconfig()[0]
-        else:
-            self.wlan = self.connect(config)
-            self.ip = self.wlan.ifconfig()[0]
+        # Determine which modes to enable
+        enable_wifi = self.comm_mode in ("wifi", "both")
+        enable_ble = self.comm_mode in ("ble", "both")
 
-        print("Network ready, IP:", self.ip)
+        if enable_wifi:
+            # ---------- Network ----------
+            if self.access_point:
+                self.ap = self.access_point_setup(config)
+                self.ip = self.ap.ifconfig()[0]
+            else:
+                self.wlan = self.connect(config)
+                self.ip = self.wlan.ifconfig()[0]
 
-        # ---------- UDP ----------
-        self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.udp_sock.bind(("0.0.0.0", UDP_PORT))
-        self.udp_sock.setblocking(False)
-        print("UDP listening on", UDP_PORT)
+            print("Network ready, IP:", self.ip)
+
+            # ---------- UDP ----------
+            self.udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.udp_sock.bind(("0.0.0.0", UDP_PORT))
+            self.udp_sock.setblocking(False)
+            print("UDP listening on", UDP_PORT)
+            self.wifi_enabled = True
+            
+        if enable_ble:
+            # ---------- BLE ----------
+            from ble_server import BLEServer
+            self.ble_server = BLEServer(
+                name="BrainBox8",
+                command_callback=self.handle_command_packet
+            )
+            if not enable_wifi:
+                self.ip = "BLE Mode"
+            print("BLE server ready")
+            self.ble_enabled = True
+        
+        if enable_wifi and enable_ble:
+            print(f"Both WiFi and BLE enabled - accepting commands from both!")
 
     # =====================================================
     # NETWORK
@@ -109,17 +141,21 @@ class AsyncWebServer:
         return ap
 
     # =====================================================
-    # UDP LISTENER (BINARY)
+    # COMMAND LISTENERS
     # =====================================================
 
     async def udp_listener(self):
+        """Listen for UDP commands (WiFi mode)"""
+        if not self.wifi_enabled or self.udp_sock is None:
+            return
+            
         print("UDP listener task started")
         check_count = 0
         while True:
             try:
                 data, addr = self.udp_sock.recvfrom(8)
                 print(f"UDP received {len(data)} bytes from {addr}: {data.hex()}")
-                self.handle_udp_packet(data)
+                self.handle_command_packet(data)
             except OSError as e:
                 # No data available, continue
                 check_count += 1
@@ -127,28 +163,34 @@ class AsyncWebServer:
                     print(f"UDP listener alive (checked {check_count} times, no data)")
                 await asyncio.sleep_ms(5)
 
-    def handle_udp_packet(self, data: bytes):
+    def handle_command_packet(self, data: bytes):
+        """Handle command packet from either UDP or BLE"""
         if len(data) < 1:
-            print("UDP: Empty packet received")
+            print("Empty packet received")
             return
 
         cmd = data[0]
-        print(f"UDP: Processing command 0x{cmd:02x}")
+        print(f"Processing command 0x{cmd:02x}")
 
         if cmd == 0x01:
-            print("UDP: BANK UP")
+            print("CMD: BANK UP")
             self.bankManager.move_up_bank()
 
         elif cmd == 0x02:
-            print("UDP: BANK DOWN")
+            print("CMD: BANK DOWN")
             self.bankManager.move_down_bank()
 
         elif cmd == 0x03 and len(data) >= 2:
             patch_idx = data[1]
-            print("UDP: PATCH", patch_idx)
+            print("CMD: PATCH", patch_idx)
             self.current_patch = self.bankManager.select_patch(patch_idx)
         else:
-            print(f"UDP: Unknown command or insufficient data: {data.hex()}")
+            print(f"Unknown command or insufficient data: {data.hex()}")
+
+    # Deprecated: old UDP-specific handler - kept for compatibility
+    def handle_udp_packet(self, data: bytes):
+        """Legacy method - redirects to handle_command_packet"""
+        self.handle_command_packet(data)
 
     # =====================================================
     # SSE BROADCAST (TEXT ONLY)
